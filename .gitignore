@@ -1,0 +1,16 @@
+# Eclipse / STM32CubeIDE metadata
+.metadata/
+
+# Build output
+Debug/
+Release/
+
+# Object and binary files
+*.o
+*.elf
+*.bin
+*.map
+
+# Temporary files
+*.log
+*.tmp
