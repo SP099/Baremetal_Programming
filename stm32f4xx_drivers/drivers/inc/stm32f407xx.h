@@ -265,7 +265,7 @@ typedef struct
 #define GPIOH   ((GPIO_RegDef_t*)GPIOH_BASEADDR)  /* GPIO Port H base pointer */
 #define GPIOI   ((GPIO_RegDef_t*)GPIOI_BASEADDR)  /* GPIO Port I base pointer */
 
-#define RCC 	((RCC_RegDeg_t*)RCC_BASEADDR)     /* Base pointer for RCC */
+#define RCC 	((RCC_RegDef_t*)RCC_BASEADDR)     /* Base pointer for RCC */
 /*
  * Clock Enable Macros for GPIOx peripherals
  * Register: RCC_AHB1ENR
