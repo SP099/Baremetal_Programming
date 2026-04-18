@@ -124,4 +124,18 @@ typedef struct
 	                         */
 } GPIO_RegDef_t;
 
+
+/*
+ * peripheral definitions ( Peripheral base addresses typecasted to xxx_RegDef_t)
+ */
+#define GPIOA   ((GPIO_RegDef_t*)GPIOA_BASEADDR)  /* GPIO Port A base pointer */
+#define GPIOB   ((GPIO_RegDef_t*)GPIOB_BASEADDR)  /* GPIO Port B base pointer */
+#define GPIOC   ((GPIO_RegDef_t*)GPIOC_BASEADDR)  /* GPIO Port C base pointer */
+#define GPIOD   ((GPIO_RegDef_t*)GPIOD_BASEADDR)  /* GPIO Port D base pointer */
+#define GPIOE   ((GPIO_RegDef_t*)GPIOE_BASEADDR)  /* GPIO Port E base pointer */
+#define GPIOF   ((GPIO_RegDef_t*)GPIOF_BASEADDR)  /* GPIO Port F base pointer */
+#define GPIOG   ((GPIO_RegDef_t*)GPIOG_BASEADDR)  /* GPIO Port G base pointer */
+#define GPIOH   ((GPIO_RegDef_t*)GPIOH_BASEADDR)  /* GPIO Port H base pointer */
+#define GPIOI   ((GPIO_RegDef_t*)GPIOI_BASEADDR)  /* GPIO Port I base pointer */
+
 #endif /* INC_STM32F407XX_H_ */
