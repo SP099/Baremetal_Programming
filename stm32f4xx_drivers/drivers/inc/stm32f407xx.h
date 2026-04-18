@@ -26,4 +26,44 @@
 #define AHB1PERIPH_BASEADDR    					0x40020000U  /* Base address of AHB1 bus peripherals (high-performance bus, offset 0x20000) */
 #define AHB2PERIPH_BASEADDR    					0x50000000U  /* Base address of AHB2 bus peripherals (separate high-speed bus region) */
 
+/*
+ * Base addresses of peripherals which are hanging on AHB1 bus
+ */
+#define GPIOA_BASEADDR    						(AHB1PERIPH_BASEADDR + 0x0000U) /* 0x40020000U */
+#define GPIOB_BASEADDR    						(AHB1PERIPH_BASEADDR + 0x0400U) /* 0x40020400U */
+#define GPIOC_BASEADDR    						(AHB1PERIPH_BASEADDR + 0x0800U) /* 0x40020800U */
+#define GPIOD_BASEADDR    						(AHB1PERIPH_BASEADDR + 0x0C00U) /* 0x40020C00U */
+#define GPIOE_BASEADDR    						(AHB1PERIPH_BASEADDR + 0x1000U) /* 0x40021000U */
+#define GPIOF_BASEADDR    						(AHB1PERIPH_BASEADDR + 0x1400U) /* 0x40021400U */
+#define GPIOG_BASEADDR    						(AHB1PERIPH_BASEADDR + 0x1800U) /* 0x40021800U */
+#define GPIOH_BASEADDR    						(AHB1PERIPH_BASEADDR + 0x1C00U) /* 0x40021C00U */
+#define GPIOI_BASEADDR    						(AHB1PERIPH_BASEADDR + 0x2000U) /* 0x40022000U */
+
+#define RCC_BASEADDR      						(AHB1PERIPH_BASEADDR + 0x3800U) /* 0x40023800U */
+
+/*
+ * Base addresses of peripherals which are hanging on APB1 bus
+ */
+#define I2C1_BASEADDR     						(APB1PERIPH_BASEADDR + 0x5400U) /* 0x40005400U */
+#define I2C2_BASEADDR     						(APB1PERIPH_BASEADDR + 0x5800U) /* 0x40005800U */
+#define I2C3_BASEADDR     						(APB1PERIPH_BASEADDR + 0x5C00U) /* 0x40005C00U */
+
+#define SPI2_BASEADDR     						(APB1PERIPH_BASEADDR + 0x3800U) /* 0x40003800U */
+#define SPI3_BASEADDR    						(APB1PERIPH_BASEADDR + 0x3C00U) /* 0x40003C00U */
+
+#define USART2_BASEADDR   						(APB1PERIPH_BASEADDR + 0x4400U) /* 0x40004400U */
+#define USART3_BASEADDR   						(APB1PERIPH_BASEADDR + 0x4800U) /* 0x40004800U */
+
+#define UART4_BASEADDR    						(APB1PERIPH_BASEADDR + 0x4C00U) /* 0x40004C00U */
+#define UART5_BASEADDR    						(APB1PERIPH_BASEADDR + 0x5000U) /* 0x40005000U */
+
+/*
+ * Base addresses of peripherals which are hanging on APB2 bus
+ */
+#define EXTI_BASEADDR							(APB2PERIPH_BASEADDR + 0x3C00U) /* 0x40013C00U */
+#define SPI1_BASEADDR							(APB2PERIPH_BASEADDR + 0x3000U) /* 0x40013000U */
+#define SYSCFG_BASEADDR        					(APB2PERIPH_BASEADDR + 0x3800U) /* 0x40013800U */
+#define USART1_BASEADDR							(APB2PERIPH_BASEADDR + 0x1000U) /* 0x40011000U */
+#define USART6_BASEADDR							(APB2PERIPH_BASEADDR + 0x1400U) /* 0x40011400U */
+
 #endif /* INC_STM32F407XX_H_ */
