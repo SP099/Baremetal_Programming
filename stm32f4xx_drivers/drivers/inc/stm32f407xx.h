@@ -8,6 +8,7 @@
 #ifndef INC_STM32F407XX_H_
 #define INC_STM32F407XX_H_
 
+#include <stdint.h>
 #define __vo volatile
 /*
  * Base addresses of Flash and SRAM memories
@@ -370,4 +371,17 @@ typedef struct
 #define USART6_PCLK_DI() (RCC->APB2ENR &= ~(1 << 5))
 
 #define SYSCFG_PCLK_DI() (RCC->APB2ENR &= ~(1 << 14))
+
+/*
+ * Some generic macros
+ */
+#define ENABLE 				1
+#define DISABLE 			0
+#define SET 				ENABLE
+#define RESET 				DISABLE
+#define GPIO_PIN_SET        SET
+#define GPIO_PIN_RESET      RESET
+#define FLAG_RESET         RESET
+#define FLAG_SET 			SET
+
 #endif /* INC_STM32F407XX_H_ */
