@@ -17,5 +17,13 @@
 #define ROM             						0x1FFF0000U  /* Base address of system memory (bootloader ROM) */
 #define SRAM            						SRAM1_BASEADDR  /* Alias for SRAM1 base address */
 
+/*
+ * AHBx and APBx Bus Peripheral base addresses
+ */
+#define PERIPH_BASEADDR        					0x40000000U  /* Base address of all peripheral registers */
+#define APB1PERIPH_BASEADDR    					PERIPH_BASEADDR  /* Base address of APB1 bus peripherals (low-speed bus) */
+#define APB2PERIPH_BASEADDR    					0x40010000U  /* Base address of APB2 bus peripherals (high-speed bus, offset 0x10000 from PERIPH_BASEADDR) */
+#define AHB1PERIPH_BASEADDR    					0x40020000U  /* Base address of AHB1 bus peripherals (high-performance bus, offset 0x20000) */
+#define AHB2PERIPH_BASEADDR    					0x50000000U  /* Base address of AHB2 bus peripherals (separate high-speed bus region) */
 
 #endif /* INC_STM32F407XX_H_ */
