@@ -8,6 +8,7 @@
 #ifndef INC_STM32F407XX_H_
 #define INC_STM32F407XX_H_
 
+#define __vo volatile
 /*
  * Base addresses of Flash and SRAM memories
  */
@@ -65,5 +66,62 @@
 #define SYSCFG_BASEADDR        					(APB2PERIPH_BASEADDR + 0x3800U) /* 0x40013800U */
 #define USART1_BASEADDR							(APB2PERIPH_BASEADDR + 0x1000U) /* 0x40011000U */
 #define USART6_BASEADDR							(APB2PERIPH_BASEADDR + 0x1400U) /* 0x40011400U */
+
+/**********************************peripheral register definition structures **********************************/
+
+/*
+ * Note : Registers of a peripheral are specific to MCU
+ * e.g : Number of Registers of SPI peripheral of STM32F4x family of MCUs may be different(more or less)
+ * Compared to number of registers of SPI peripheral of STM32Lx or STM32F0x family of MCUs
+ */
+typedef struct
+{
+	__vo uint32_t MODER;    /* Offset: 0x00 - GPIO port mode register
+	                         * Each pin has 2 bits (MODERy[1:0])
+	                         * 00: Input, 01: Output, 10: Alternate, 11: Analog
+	                         */
+
+	__vo uint32_t OTYPER;   /* Offset: 0x04 - GPIO output type register
+	                         * Each pin has 1 bit (OTy)
+	                         * 0: Push-pull, 1: Open-drain
+	                         */
+
+	__vo uint32_t OSPEEDR;  /* Offset: 0x08 - GPIO output speed register
+	                         * Each pin has 2 bits (OSPEEDRy[1:0])
+	                         * 00: Low, 01: Medium, 10: High, 11: Very high
+	                         */
+
+	__vo uint32_t PUPDR;    /* Offset: 0x0C - GPIO pull-up/pull-down register
+	                         * Each pin has 2 bits (PUPDRy[1:0])
+	                         * 00: No pull, 01: Pull-up, 10: Pull-down
+	                         */
+
+	__vo uint32_t IDR;      /* Offset: 0x10 - GPIO input data register
+	                         * Read-only input state (IDRy)
+	                         * Bit y reflects input level of pin y
+	                         */
+
+	__vo uint32_t ODR;      /* Offset: 0x14 - GPIO output data register
+	                         * Write/read output state (ODRy)
+	                         * 1 = High, 0 = Low
+	                         */
+
+	__vo uint32_t BSRR;     /* Offset: 0x18 - GPIO bit set/reset register
+	                         * Lower 16 bits: Set pin (BSy)
+	                         * Upper 16 bits: Reset pin (BRy)
+	                         * Atomic set/reset operation
+	                         */
+
+	__vo uint32_t LCKR;     /* Offset: 0x1C - GPIO configuration lock register
+	                         * Locks GPIO configuration until reset
+	                         * LCKKy bit sequence required
+	                         */
+
+	__vo uint32_t AFR[2];   /* Offset: 0x20 - Alternate function registers
+	                         * AFR[0] = AFRL (pins 0–7)
+	                         * AFR[1] = AFRH (pins 8–15)
+	                         * Each pin uses 4 bits (AFRy[3:0])
+	                         */
+} GPIO_RegDef_t;
 
 #endif /* INC_STM32F407XX_H_ */
