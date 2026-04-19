@@ -742,7 +742,7 @@ void GPIO_IRQPriorityConfig(uint8_t IRQNumber, uint32_t IRQPriority)
      * Before writing new priority, clear existing 8-bit field
      * to avoid mixing old and new values
      *****************************************************************/
-    *(NVIC_PR_BASEADDR + iprx) &= ~(0xFF << shift);
+    *(NVIC_PR_BASEADDR + iprx) &= ~(0xFF << (8 * section));
 
     /*****************************************************************
      * STEP 5: Set new priority value
