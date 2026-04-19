@@ -372,6 +372,66 @@ typedef struct
 
 #define SYSCFG_PCLK_DI() (RCC->APB2ENR &= ~(1 << 14))
 
+/*****************************************************************
+ * Reset the peripheral using RCC reset register
+ *
+ * Logic:
+ *  - Set the corresponding reset bit → puts peripheral into reset state
+ *  - Clear the reset bit → releases peripheral from reset
+ *
+ * Why both steps?
+ *  - Reset in STM32 works like a pulse (1 → 0)
+ *  - If not cleared, the peripheral will remain stuck in reset
+ *
+ * Result:
+ *  - All registers of the peripheral return to default values
+ *  - Peripheral is ready for fresh configuration
+ *****************************************************************/
+#define GPIOA_REG_RESET() do { \
+    RCC->AHB1RSTR |=  (1 << 0); \
+    RCC->AHB1RSTR &= ~(1 << 0); \
+} while(0)
+
+#define GPIOB_REG_RESET() do { \
+    RCC->AHB1RSTR |=  (1 << 1); \
+    RCC->AHB1RSTR &= ~(1 << 1); \
+} while(0)
+
+#define GPIOC_REG_RESET() do { \
+    RCC->AHB1RSTR |=  (1 << 2); \
+    RCC->AHB1RSTR &= ~(1 << 2); \
+} while(0)
+
+#define GPIOD_REG_RESET() do { \
+    RCC->AHB1RSTR |=  (1 << 3); \
+    RCC->AHB1RSTR &= ~(1 << 3); \
+} while(0)
+
+#define GPIOE_REG_RESET() do { \
+    RCC->AHB1RSTR |=  (1 << 4); \
+    RCC->AHB1RSTR &= ~(1 << 4); \
+} while(0)
+
+#define GPIOF_REG_RESET() do { \
+    RCC->AHB1RSTR |=  (1 << 5); \
+    RCC->AHB1RSTR &= ~(1 << 5); \
+} while(0)
+
+#define GPIOG_REG_RESET() do { \
+    RCC->AHB1RSTR |=  (1 << 6); \
+    RCC->AHB1RSTR &= ~(1 << 6); \
+} while(0)
+
+#define GPIOH_REG_RESET() do { \
+    RCC->AHB1RSTR |=  (1 << 7); \
+    RCC->AHB1RSTR &= ~(1 << 7); \
+} while(0)
+
+#define GPIOI_REG_RESET() do { \
+    RCC->AHB1RSTR |=  (1 << 8); \
+    RCC->AHB1RSTR &= ~(1 << 8); \
+} while(0)
+
 /*
  * Some generic macros
  */
@@ -381,7 +441,7 @@ typedef struct
 #define RESET 				DISABLE
 #define GPIO_PIN_SET        SET
 #define GPIO_PIN_RESET      RESET
-#define FLAG_RESET         RESET
+#define FLAG_RESET         	RESET
 #define FLAG_SET 			SET
 
 #endif /* INC_STM32F407XX_H_ */
