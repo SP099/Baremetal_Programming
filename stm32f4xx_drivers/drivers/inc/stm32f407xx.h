@@ -10,6 +10,28 @@
 
 #include <stdint.h>
 #define __vo volatile
+
+/******************************* Processor Specific Details *****************************/
+/*
+ * ARM Cortex Mx Processor NVIC ISERx register Addresses
+ */
+#define NVIC_ISER0 								((__vo uint32_t*)0xE000E100)
+#define NVIC_ISER1 								((__vo uint32_t*)0xE000E104)
+#define NVIC_ISER2 								((__vo uint32_t*)0xE000E108)
+#define NVIC_ISER3 								((__vo uint32_t*)0xE000E10C)
+
+/*
+ * ARM Cortex Mx Processor NVIC ICERx register Addresses
+ */
+#define NVIC_ICER0 								((__vo uint32_t*)0xE000E180)
+#define NVIC_ICER1 								((__vo uint32_t*)0xE000E184)
+#define NVIC_ICER2 								((__vo uint32_t*)0xE000E188)
+#define NVIC_ICER3 								((__vo uint32_t*)0xE000E18C)
+
+/*
+ * ARM Cortex Mx Processor NVIC Interrupt Priority register Addresses
+ */
+#define NVIC_PR_BASEADDR 						((__vo uint32_t*)0xE000E400)
 /*
  * Base addresses of Flash and SRAM memories
  */
@@ -253,6 +275,52 @@ typedef struct
 } RCC_RegDef_t;
 
 /*
+ * peripheral register definition structure for EXTI
+ */
+typedef struct
+{
+    __vo uint32_t IMR;     /* Offset: 0x00 - Interrupt mask register
+                           * Enable/disable interrupt request for EXTI lines */
+
+    __vo uint32_t EMR;     /* Offset: 0x04 - Event mask register
+                           * Enable/disable event request for EXTI lines */
+
+    __vo uint32_t RTSR;    /* Offset: 0x08 - Rising trigger selection register
+                           * Select rising edge trigger */
+
+    __vo uint32_t FTSR;    /* Offset: 0x0C - Falling trigger selection register
+                           * Select falling edge trigger */
+
+    __vo uint32_t SWIER;   /* Offset: 0x10 - Software interrupt event register
+                           * Generate software interrupt */
+
+    __vo uint32_t PR;      /* Offset: 0x14 - Pending register
+                           * Shows pending interrupt (write 1 to clear) */
+
+} EXTI_RegDef_t;
+
+/*
+ * Peripheral register definition structure for SYSCFG
+ */
+typedef struct
+{
+    __vo uint32_t MEMRMP;      /* Offset: 0x00 - Memory remap register
+                               * Controls memory mapping */
+
+    __vo uint32_t PMC;         /* Offset: 0x04 - Peripheral mode configuration register
+                               * Configures peripheral modes */
+
+    __vo uint32_t EXTICR[4];   /* Offset: 0x08 - 0x14 - External interrupt configuration registers
+                               * Maps EXTI lines to GPIO ports */
+
+    __vo uint32_t RESERVED[2]; /* Offset: 0x18 - 0x1C - Reserved */
+
+    __vo uint32_t CMPCR;       /* Offset: 0x20 - Compensation cell control register
+                               * I/O compensation cell control */
+
+} SYSCFG_RegDef_t;
+
+/*
  * peripheral definitions ( Peripheral base addresses typecasted to xxx_RegDef_t)
  */
 #define GPIOA   ((GPIO_RegDef_t*)GPIOA_BASEADDR)  /* GPIO Port A base pointer */
@@ -266,6 +334,9 @@ typedef struct
 #define GPIOI   ((GPIO_RegDef_t*)GPIOI_BASEADDR)  /* GPIO Port I base pointer */
 
 #define RCC 	((RCC_RegDef_t*)RCC_BASEADDR)     /* Base pointer for RCC */
+#define EXTI    ((EXTI_RegDef_t*)EXTI_BASEADDR)   /* Base pointer for EXTI */
+#define SYSCFG  ((SYSCFG_RegDef_t*)SYSCFG_BASEADDR) /* Base pointer for SYSCFG */
+
 /*
  * Clock Enable Macros for GPIOx peripherals
  * Register: RCC_AHB1ENR
@@ -431,6 +502,28 @@ typedef struct
     RCC->AHB1RSTR |=  (1 << 8); \
     RCC->AHB1RSTR &= ~(1 << 8); \
 } while(0)
+
+/* returns port code for given GPIOx base address */
+#define GPIO_BASEADDR_TO_CODE(x)   ((x == GPIOA) ? 0 : \
+                                   (x == GPIOB) ? 1 : \
+                                   (x == GPIOC) ? 2 : \
+                                   (x == GPIOD) ? 3 : \
+                                   (x == GPIOE) ? 4 : \
+                                   (x == GPIOF) ? 5 : \
+                                   (x == GPIOG) ? 6 : \
+                                   (x == GPIOH) ? 7 : \
+                                   (x == GPIOI) ? 8 : 0)
+
+/*
+ * IRQ(Interrupt Request) Number of STM32F407x MCU
+ */
+#define IRQ_NO_EXTI0		6
+#define IRQ_NO_EXTI1		7
+#define IRQ_NO_EXTI2		8
+#define IRQ_NO_EXTI3		9
+#define IRQ_NO_EXTI4		10
+#define IRQ_NO_EXTI9_5		23
+#define IRQ_NO_EXTI15_10    40
 
 /*
  * Some generic macros

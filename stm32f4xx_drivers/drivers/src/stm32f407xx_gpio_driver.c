@@ -182,15 +182,113 @@ void GPIO_Init(GPIO_Handle_t *pGPIOHandle)
      *********************************************************************/
     if(pGPIOHandle->GPIO_PinConfig.GPIO_PinMode <= GPIO_MODE_ANALOG)
     {
-        /* Clear existing 2 bits */
-        pGPIOHandle->pGPIOx->MODER &= ~(0x03 << (2 * pin));
+    	/* Clear existing 2 bits */
+    	pGPIOHandle->pGPIOx->MODER &= ~(0x03 << (2 * pin));
 
-        /* Set new mode */
-        pGPIOHandle->pGPIOx->MODER |= (pGPIOHandle->GPIO_PinConfig.GPIO_PinMode << (2 * pin));
-    }
-    else
+    	/* Set new mode */
+    	pGPIOHandle->pGPIOx->MODER |= (pGPIOHandle->GPIO_PinConfig.GPIO_PinMode << (2 * pin));
+    } else
     {
-        // TODO: Interrupt mode configuration (EXTI, SYSCFG, NVIC)
+
+    	/*********************************************************************
+    	 * ================= EXTI EDGE CONFIGURATION =========================
+    	 *
+    	 * This section configures which edge should trigger the interrupt.
+    	 *
+    	 * EXTI supports 3 trigger types:
+    	 * 1. Falling edge  → signal goes HIGH → LOW
+    	 * 2. Rising edge   → signal goes LOW  → HIGH
+    	 * 3. Both edges    → trigger on both transitions
+    	 *
+    	 * These are configured using:
+    	 *   - FTSR (Falling Trigger Selection Register)
+    	 *   - RTSR (Rising Trigger Selection Register)
+    	 *********************************************************************/
+
+    	if(pGPIOHandle->GPIO_PinConfig.GPIO_PinMode == GPIO_MODE_IT_FT)
+    	{
+    		/* Enable falling edge trigger */
+    		EXTI->FTSR |= (1 << pin);
+
+    		/* Disable rising edge trigger */
+    		EXTI->RTSR &= ~(1 << pin);
+    	}
+    	else if(pGPIOHandle->GPIO_PinConfig.GPIO_PinMode == GPIO_MODE_IT_RT)
+    	{
+    		/* Enable rising edge trigger */
+    		EXTI->RTSR |= (1 << pin);
+
+    		/* Disable falling edge trigger */
+    		EXTI->FTSR &= ~(1 << pin);
+    	}
+    	else if(pGPIOHandle->GPIO_PinConfig.GPIO_PinMode == GPIO_MODE_IT_RFT)
+    	{
+    		/* Enable both rising and falling edge triggers */
+    		EXTI->RTSR |= (1 << pin);
+    		EXTI->FTSR |= (1 << pin);
+    	}
+
+
+    	/*********************************************************************
+    	 * ================= SYSCFG CONFIGURATION ===========================
+    	 *
+    	 * SYSCFG is used to map GPIO pins to EXTI lines.
+    	 *
+    	 * Example:
+    	 *   PA0 → EXTI0
+    	 *   PB0 → EXTI0
+    	 *   PC0 → EXTI0
+    	 *
+    	 * Without SYSCFG mapping, EXTI doesn't know which port is used.
+    	 *********************************************************************/
+
+    	/* Get GPIO port code for SYSCFG mapping */
+    	uint8_t portcode = GPIO_BASEADDR_TO_CODE(pGPIOHandle->pGPIOx);
+
+    	/* Enable SYSCFG peripheral clock */
+    	SYSCFG_PCLK_EN();
+
+    	/*********************************************************************
+    	 * Each EXTICR register handles 4 pins:
+    	 *
+    	 * EXTICR[0] → EXTI0 to EXTI3
+    	 * EXTICR[1] → EXTI4 to EXTI7
+    	 * EXTICR[2] → EXTI8 to EXTI11
+    	 * EXTICR[3] → EXTI12 to EXTI15
+    	 *
+    	 * Each pin takes 4 bits inside EXTICR register.
+    	 *********************************************************************/
+
+    	uint8_t reg_index = pin / 4;      // Which EXTICR register
+    	uint8_t reg_pos   = (pin % 4) * 4; // Bit position inside register
+
+    	/*********************************************************************
+    	 * Clear previous configuration
+    	 * (important to avoid wrong port mapping)
+    	 *********************************************************************/
+    	SYSCFG->EXTICR[reg_index] &= ~(0xF << reg_pos);
+
+    	/*********************************************************************
+    	 * Set new port mapping into EXTICR
+    	 *
+    	 * Example:
+    	 *   portcode = 0 → GPIOA
+    	 *   portcode = 1 → GPIOB
+    	 *********************************************************************/
+    	SYSCFG->EXTICR[reg_index] |= (portcode << reg_pos);
+
+
+    	/*********************************************************************
+    	 * ================= EXTI INTERRUPT MASK =============================
+    	 *
+    	 * IMR (Interrupt Mask Register)
+    	 *
+    	 * - 1 → Interrupt enabled (unmasked)
+    	 * - 0 → Interrupt disabled (masked)
+    	 *
+    	 * This step enables interrupt generation for the selected pin.
+    	 *********************************************************************/
+    	EXTI->IMR |= (1 << pin);
     }
 
     /*********************************************************************
@@ -488,4 +586,231 @@ void GPIO_WriteToOutputPort(GPIO_RegDef_t *pGPIOx, uint16_t Value)
 void GPIO_ToggleOutputPin(GPIO_RegDef_t *pGPIOx, uint8_t PinNumber)
 {
 	pGPIOx->ODR ^= (1 << PinNumber);
+}
+
+/*********************************************************************
+ * @brief  Configure NVIC interrupt (enable or disable IRQ line)
+ *
+ * @details
+ *  NVIC (Nested Vectored Interrupt Controller) is part of Cortex-M4 core.
+ *
+ *  It controls whether a peripheral interrupt is allowed to reach CPU.
+ *
+ *  Each interrupt (IRQ) is represented by a single bit inside NVIC registers.
+ *
+ *  NVIC uses 3 registers for interrupt enable/disable:
+ *
+ *    ISER (Interrupt Set Enable Register) → Enable interrupt
+ *    ICER (Interrupt Clear Enable Register) → Disable interrupt
+ *
+ *  Each ISER/ICER register controls 32 interrupts:
+ *
+ *    ISER0 / ICER0 → IRQ 0  to 31
+ *    ISER1 / ICER1 → IRQ 32 to 63
+ *    ISER2 / ICER2 → IRQ 64 to 95
+ *
+ *  Why this division?
+ *  ------------------------------------------------------------
+ *  - Each register is 32-bit wide (1 bit per IRQ line)
+ *  - So:
+ *        32 bits = 32 IRQs per register
+ *  - Cortex-M architecture standard design
+ *
+ *********************************************************************/
+void GPIO_IRQInterruptConfig(uint8_t IRQNumber, uint8_t EnorDi)
+{
+    if(EnorDi == ENABLE)
+    {
+        /* ================= ENABLE INTERRUPT ================= */
+
+        if(IRQNumber <= 31)
+        {
+            /* IRQ 0–31 → ISER0 register */
+            *NVIC_ISER0 |= (1 << IRQNumber);
+        }
+        else if(IRQNumber <= 63)
+        {
+            /* IRQ 32–63 → ISER1 register
+             * Shift by (IRQNumber % 32) to map into 0–31 bit range
+             */
+            *NVIC_ISER1 |= (1 << (IRQNumber % 32));
+        }
+        else if(IRQNumber <= 95)
+        {
+            /* IRQ 64–95 → ISER2 register
+             * Shift by (IRQNumber % 64) to get correct position
+             */
+            *NVIC_ISER2 |= (1 << (IRQNumber % 64));
+        }
+    }
+    else
+    {
+        /* ================= DISABLE INTERRUPT ================= */
+
+        if(IRQNumber <= 31)
+        {
+            /* IRQ 0–31 → ICER0 register */
+            *NVIC_ICER0 |= (1 << IRQNumber);
+        }
+        else if(IRQNumber <= 63)
+        {
+            /* IRQ 32–63 → ICER1 register */
+            *NVIC_ICER1 |= (1 << (IRQNumber % 32));
+        }
+        else if(IRQNumber <= 95)
+        {
+            /* IRQ 64–95 → ICER2 register */
+            *NVIC_ICER2 |= (1 << (IRQNumber % 64));
+        }
+    }
+}
+
+
+/*********************************************************************
+ * @brief  Configure NVIC interrupt priority for a given IRQ number
+ *
+ * @details
+ *  - This function assigns priority to a specific interrupt (IRQ)
+ *    inside Cortex-M4 NVIC (Nested Vectored Interrupt Controller)
+ *
+ *  - NVIC supports priority-based interrupt handling:
+ *      Lower number → Higher priority
+ *      Higher number → Lower priority
+ *
+ *  - Each IRQ has an 8-bit priority field, but STM32F407 uses only
+ *    upper 4 bits (bits [7:4])
+ *
+ *  - NVIC priority registers (IPR) structure:
+ *      Each IPR register = 32 bits
+ *      Each IRQ priority field = 8 bits
+ *      → 4 IRQs per IPR register
+ *
+ *********************************************************************/
+void GPIO_IRQPriorityConfig(uint8_t IRQNumber, uint32_t IRQPriority)
+{
+    /*****************************************************************
+     * STEP 1: Identify which IPR register to access
+     *
+     * Each IPR register handles 4 IRQs:
+     *   IPR0 → IRQ0 to IRQ3
+     *   IPR1 → IRQ4 to IRQ7
+     *   IPR2 → IRQ8 to IRQ11
+     *
+     * So:
+     *   iprx = IRQNumber / 4
+     *****************************************************************/
+    uint8_t iprx = IRQNumber / 4;
+
+    /*****************************************************************
+     * STEP 2: Identify position inside the register
+     *
+     * Each IRQ takes 8 bits inside IPR register:
+     *   section 0 → bits [7:0]
+     *   section 1 → bits [15:8]
+     *   section 2 → bits [23:16]
+     *   section 3 → bits [31:24]
+     *
+     * So:
+     *   section = IRQNumber % 4
+     *****************************************************************/
+    uint8_t section = IRQNumber % 4;
+
+    /*********************************************************************
+     * STEP 3: Calculate bit position shift
+     *
+     * Each IRQ priority field is 8 bits wide inside NVIC_IPR register.
+     *
+     * However, STM32F407 implements only the upper 4 bits
+     * of this 8-bit priority field (bits [7:4]).
+     *
+     * So the effective priority must be placed into the upper nibble.
+     *
+     * Shift calculation:
+     *   shift = (8 * section) + 4
+     *
+     * Explanation:
+     *   8 * section → selects the correct 8-bit priority slot
+     *   +4          → moves value into upper 4 bits (hardware-used bits)
+     *
+     * Lower 4 bits (bits [3:0]) are not implemented and ignored by hardware.
+     *********************************************************************/
+    uint8_t shift = (8 * section) + 4;
+
+    /*****************************************************************
+     * STEP 4: Clear previous priority (IMPORTANT)
+     *
+     * Before writing new priority, clear existing 8-bit field
+     * to avoid mixing old and new values
+     *****************************************************************/
+    *(NVIC_PR_BASEADDR + iprx) &= ~(0xFF << shift);
+
+    /*****************************************************************
+     * STEP 5: Set new priority value
+     *
+     * IRQPriority is shifted into correct position and written
+     * into NVIC IPR register
+     *
+     * Only upper 4 bits will be used by hardware
+     *****************************************************************/
+    *(NVIC_PR_BASEADDR + iprx) |= (IRQPriority << shift);
+}
+
+/*********************************************************************
+ * @brief  Clear GPIO external interrupt pending flag (EXI handling)
+ *
+ * @details
+ *  - This API is used inside the Interrupt Service Routine (ISR)
+ *    to acknowledge and clear the interrupt triggered by a GPIO pin
+ *
+ *  - When a GPIO interrupt occurs:
+ *      1. EXTI line detects the event (rising/falling edge)
+ *      2. Interrupt is forwarded to NVIC
+ *      3. CPU executes ISR
+ *      4. Pending bit must be cleared in EXTI_PR register
+ *
+ *  - If pending flag is not cleared:
+ *      → Interrupt will keep re-triggering continuously
+ *
+ * @note
+ *  - This function only clears EXTI pending register
+ *  - NVIC handling is done separately
+ *
+ *********************************************************************/
+void GPIO_IRQHandling(uint8_t PinNumber)
+{
+    /*****************************************************************
+     * STEP 1: Check if interrupt is pending for this pin
+     *
+     * EXTI->PR (Pending Register) contains interrupt status flags.
+     *
+     * Why '&' operator is used?
+     *  - We want to check ONLY the specific bit (PinNumber)
+     *  - '&' performs bitwise AND operation
+     *  - If result is non-zero → interrupt is pending
+     *
+     * Example:
+     *   PR = 0b00010000 (Pin 4 interrupt occurred)
+     *   (1 << 4) = 0b00010000
+     *   PR & mask = 0b00010000 → TRUE
+     *****************************************************************/
+    if(EXTI->PR & (1 << PinNumber))
+    {
+        /*****************************************************************
+         * STEP 2: Clear pending interrupt flag
+         *
+         * Why '|' (OR) operator is used?
+         *  - STM32 EXTI uses "write 1 to clear" mechanism
+         *  - Writing 1 to a bit clears that pending flag
+         *  - Other bits must remain unchanged
+         *
+         * Why not '=' assignment?
+         *  - '=' would overwrite entire register
+         *  - We only want to affect ONE bit, not others
+         *
+         * Why not '&=' ?
+         *  - '&=' cannot clear bits in write-1-to-clear registers
+         *  - It only clears bits by writing 0, which EXTI does not use
+         *****************************************************************/
+        EXTI->PR |= (1 << PinNumber);
+    }
 }
