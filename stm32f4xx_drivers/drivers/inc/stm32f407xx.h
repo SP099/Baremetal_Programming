@@ -444,4 +444,5 @@ typedef struct
 #define FLAG_RESET         	RESET
 #define FLAG_SET 			SET
 
+#include "stm32f407xx_gpio_driver.h"
 #endif /* INC_STM32F407XX_H_ */
