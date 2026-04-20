@@ -8,6 +8,7 @@
 #ifndef INC_STM32F407XX_SPI_DRIVER_H_
 #define INC_STM32F407XX_SPI_DRIVER_H_
 
+#include "stm32f407xx.h"
 /*
  * Configuration Structure For SPIx peripheral
  */
@@ -30,7 +31,6 @@ typedef struct
 	SPI_RegDef_t *pSPIx;
 	SPI_Config_t SPIConfig;
 }SPI_Handle_t;
-#endif /* INC_STM32F407XX_SPI_DRIVER_H_ */
 
 /******************************************************************************************
  *								APIs supported by this driver
@@ -60,3 +60,4 @@ void SPI_ReceiveData(SPI_RegDef_t *pSPIx, uint8_t *pRxBuffer, uint32_t Len);
 void SPI_IRQInterruptConfig(uint8_t IRQNumber, uint8_t EnorDi);
 void SPI_IRQPriorityConfig(uint8_t IRQNumber, uint32_t IRQPriority);
 void SPI_IRQHandling(SPI_Handle_t *pHandle);
+#endif /* INC_STM32F407XX_SPI_DRIVER_H_ */
