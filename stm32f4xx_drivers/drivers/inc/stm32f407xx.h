@@ -533,6 +533,24 @@ typedef struct
                                    (x == GPIOH) ? 7 : \
                                    (x == GPIOI) ? 8 : 0)
 
+/* Reset SPI1 peripheral (APB2 bus) */
+#define SPI1_REG_RESET() do {        \
+    RCC->APB2RSTR |= (1 << 12);     /* Set reset bit */ \
+    RCC->APB2RSTR &= ~(1 << 12);    /* Clear reset bit */ \
+} while(0)
+
+/* Reset SPI2 peripheral (APB1 bus) */
+#define SPI2_REG_RESET() do {        \
+    RCC->APB1RSTR |= (1 << 14);     /* Set reset bit */ \
+    RCC->APB1RSTR &= ~(1 << 14);    /* Clear reset bit */ \
+} while(0)
+
+/* Reset SPI3 peripheral (APB1 bus) */
+#define SPI3_REG_RESET() do {        \
+    RCC->APB1RSTR |= (1 << 15);     /* Set reset bit */ \
+    RCC->APB1RSTR &= ~(1 << 15);    /* Clear reset bit */ \
+} while(0)
+
 /*
  * IRQ(Interrupt Request) Number of STM32F407x MCU
  */
@@ -582,6 +600,54 @@ typedef struct
 #define GPIO_PIN_RESET      RESET
 #define FLAG_RESET         	RESET
 #define FLAG_SET 			SET
+
+/*********************************************************************
+ * SPI_CR1 Register Bit Definitions
+
+ *********************************************************************/
+
+#define SPI_CR1_CPHA        0   /* Clock Phase */
+#define SPI_CR1_CPOL        1   /* Clock Polarity */
+#define SPI_CR1_MSTR        2   /* Master Selection */
+
+/*
+ * BR (Baud Rate) is 3-bit field → bits [5:3]
+ * We store starting bit position (3)
+ * WHY?
+ *  - Used as: value << SPI_CR1_BR
+ */
+#define SPI_CR1_BR          3
+
+#define SPI_CR1_SPE         6   /* SPI Enable */
+
+/*
+ * LSB First:
+ * 0 → MSB first (default)
+ * 1 → LSB first
+ */
+#define SPI_CR1_LSBFIRST    7
+
+#define SPI_CR1_SSI         8   /* Internal Slave Select */
+#define SPI_CR1_SSM         9   /* Software Slave Management */
+#define SPI_CR1_RXONLY      10  /* Receive-only mode */
+#define SPI_CR1_DFF         11  /* Data Frame Format */
+#define SPI_CR1_CRCNEXT     12  /* CRC transfer next */
+#define SPI_CR1_CRCEN       13  /* Hardware CRC enable */
+#define SPI_CR1_BIDIOE      14  /* Output enable in bidirectional mode */
+#define SPI_CR1_BIDIMODE    15  /* Bidirectional data mode enable */
+
+/*
+ * Bit position definitions of SPI_SR (Status Register)
+ */
+#define SPI_SR_RXNE     0   /* Receive buffer NOT empty (data available to read) */
+#define SPI_SR_TXE      1   /* Transmit buffer empty (ready to send new data) */
+#define SPI_SR_CHSIDE   2   /* Channel side (used in I2S mode) */
+#define SPI_SR_UDR      3   /* Underrun error (slave mode issue) */
+#define SPI_SR_CRCERR   4   /* CRC error flag */
+#define SPI_SR_MODF     5   /* Mode fault (multi-master conflict) */
+#define SPI_SR_OVR      6   /* Overrun error (data lost because DR not read) */
+#define SPI_SR_BSY      7   /* SPI busy flag (ongoing transmission) */
+#define SPI_SR_FRE      8   /* Frame format error (I2S mode) */
 
 #include "stm32f407xx_gpio_driver.h"
 #include "stm32f407xx_spi_driver.h"
