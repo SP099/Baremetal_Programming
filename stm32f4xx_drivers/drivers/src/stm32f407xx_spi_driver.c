@@ -437,3 +437,145 @@ void SPI_SendData(SPI_RegDef_t *pSPIx,uint8_t *pTxBuffer, uint32_t Len)
      */
     while(SPI_GetFlagStatus(pSPIx, SPI_BSY_FLAG) == FLAG_SET);
 }
+
+/*********************************************************************
+ * @fn          - SPI_PeripheralControl
+ *
+ * @brief       - Enable or disable the SPI peripheral
+ *
+ * @param[in]   - pSPIx  : Base address of SPI peripheral (SPI1/SPI2/SPI3)
+ * @param[in]   - EnorDi : ENABLE or DISABLE
+ *
+ * @return      - None
+ *
+ * @details
+ *  - Controls the SPE (SPI Enable) bit in SPI_CR1 register.
+ *
+ *  SPE (Bit 6):
+ *    0 → SPI disabled
+ *    1 → SPI enabled
+ *
+ *  WHY this API is required?
+ *  ------------------------------------------------------------
+ *  - SPI configuration (CR1 settings) can be done while disabled
+ *  - But actual communication starts ONLY when SPE = 1
+ *
+ *  IMPORTANT NOTES:
+ *  - Call this AFTER SPI_Init()
+ *  - Before disabling SPI:
+ *        → Ensure BSY flag is RESET (no ongoing transmission)
+ *        → Otherwise last data may get corrupted
+ *
+ *********************************************************************/
+void SPI_PeripheralControl(SPI_RegDef_t *pSPIx, uint8_t EnorDi)
+{
+    if(EnorDi == ENABLE)
+    {
+        /* Enable SPI peripheral (start communication capability) */
+        pSPIx->CR1 |= (1 << SPI_CR1_SPE);
+    }
+    else
+    {
+        /* Disable SPI peripheral */
+        pSPIx->CR1 &= ~(1 << SPI_CR1_SPE);
+    }
+}
+
+/*********************************************************************
+ * @fn          - SPI_SSIConfig
+ *
+ * @brief       - Configure Internal Slave Select (SSI bit)
+ *
+ * @param[in]   - pSPIx  : Base address of SPI peripheral
+ * @param[in]   - EnorDi : ENABLE or DISABLE
+ *
+ * @return      - None
+ *
+ * @details
+ *  - Controls SSI (Internal Slave Select) bit in SPI_CR1.
+ *
+ *  SSI (Bit 8):
+ *    0 → Internal NSS = LOW
+ *    1 → Internal NSS = HIGH
+ *
+ *  USED ONLY WHEN:
+ *    → SSM (Software Slave Management) = 1
+ *
+ *  WHY SSI is important?
+ *  ------------------------------------------------------------
+ *  - When SSM = 1, hardware NSS pin is ignored
+ *  - But internally SPI still needs NSS = HIGH in master mode
+ *
+ *  If SSI is NOT set:
+ *    → MODF (Mode Fault) error occurs
+ *    → SPI gets disabled automatically
+ *
+ *  So:
+ *    SSM = 1  → MUST set SSI = 1
+ *
+ *********************************************************************/
+void SPI_SSIConfig(SPI_RegDef_t *pSPIx, uint8_t EnorDi)
+{
+    if(EnorDi == ENABLE)
+    {
+        /* Set SSI → simulate NSS = HIGH internally */
+        pSPIx->CR1 |= (1 << SPI_CR1_SSI);
+    }
+    else
+    {
+        /* Clear SSI */
+        pSPIx->CR1 &= ~(1 << SPI_CR1_SSI);
+    }
+}
+
+/*********************************************************************
+ * @fn          - SPI_SSOEConfig
+ *
+ * @brief       - Configure Slave Select Output Enable (SSOE)
+ *
+ * @param[in]   - pSPIx  : Base address of SPI peripheral
+ * @param[in]   - EnOrDi : ENABLE or DISABLE
+ *
+ * @return      - None
+ *
+ * @details
+ *  - Controls SSOE bit in SPI_CR2 register.
+ *
+ *  SSOE (Bit 2):
+ *    0 → NSS pin is free (software/general GPIO control)
+ *    1 → NSS managed automatically by hardware
+ *
+ *  USED IN:
+ *    → Master mode with hardware NSS management
+ *
+ *  HOW IT WORKS:
+ *  ------------------------------------------------------------
+ *  When SSOE = 1 and SPE = 1:
+ *    → NSS pin is automatically pulled LOW (select slave)
+ *
+ *  When SPE = 0:
+ *    → NSS pin goes HIGH (deselect slave)
+ *
+ *  WHY this is useful?
+ *  ------------------------------------------------------------
+ *  - Eliminates manual GPIO control of NSS
+ *  - Ensures proper timing of slave selection
+ *
+ *  NOTE:
+ *  - Not used when SSM = 1 (software NSS mode)
+ *  - Used when SSM = 0 (hardware NSS mode)
+ *
+ *********************************************************************/
+void SPI_SSOEConfig(SPI_RegDef_t *pSPIx, uint8_t EnOrDi)
+{
+    if(EnOrDi == ENABLE)
+    {
+        /* Enable hardware NSS output */
+        pSPIx->CR2 |= (1 << SPI_CR2_SSOE);
+    }
+    else
+    {
+        /* Disable hardware NSS control */
+        pSPIx->CR2 &= ~(1 << SPI_CR2_SSOE);
+    }
+}
