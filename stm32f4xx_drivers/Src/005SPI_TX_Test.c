@@ -121,7 +121,7 @@ int main(void)
     SPI_SSIConfig(SPI2, ENABLE);
 
     /* STEP 4: Enable SPI peripheral (SPE = 1) */
-    SPI_PeriPheralControl(SPI2, ENABLE);
+    SPI_PeripheralControl(SPI2, ENABLE);
 
     /* STEP 5: Send data (blocking call)
      *
@@ -141,7 +141,7 @@ int main(void)
     while(SPI_GetFlagStatus(SPI2, SPI_BSY_FLAG) == FLAG_SET);
 
     /* STEP 7: Disable SPI peripheral */
-    SPI_PeriPheralControl(SPI2, DISABLE);
+    SPI_PeripheralControl(SPI2, DISABLE);
 
     /* Infinite loop */
     while(1);
