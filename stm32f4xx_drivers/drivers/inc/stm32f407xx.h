@@ -8,8 +8,10 @@
 #ifndef INC_STM32F407XX_H_
 #define INC_STM32F407XX_H_
 
+#include <stddef.h>
 #include <stdint.h>
 #define __vo volatile
+#define __weak __attribute__((weak))
 
 /******************************* Processor Specific Details *****************************/
 /*
@@ -562,6 +564,10 @@ typedef struct
 #define IRQ_NO_EXTI9_5		23
 #define IRQ_NO_EXTI15_10    40
 
+#define IRQ_NO_SPI1			35
+#define IRQ_NO_SPI2			36
+#define IRQ_NO_SPI3			51
+
 /*
  * Macros for NVIC interrupt priority levels
  * STM32F407 uses 4-bit priority (0–15)
@@ -635,6 +641,17 @@ typedef struct
 #define SPI_CR1_CRCEN       13  /* Hardware CRC enable */
 #define SPI_CR1_BIDIOE      14  /* Output enable in bidirectional mode */
 #define SPI_CR1_BIDIMODE    15  /* Bidirectional data mode enable */
+
+/*
+ * Bit position definitions of SPI_CR2 (Control Register 2)
+ */
+#define SPI_CR2_RXDMAEN    0   /* RX DMA enable */
+#define SPI_CR2_TXDMAEN    1   /* TX DMA enable */
+#define SPI_CR2_SSOE       2   /* NSS output enable (hardware control) */
+#define SPI_CR2_FRF        4   /* Frame format (Motorola/TI) */
+#define SPI_CR2_ERRIE      5   /* Error interrupt enable */
+#define SPI_CR2_RXNEIE     6   /* RXNE interrupt enable */
+#define SPI_CR2_TXEIE      7   /* TXE interrupt enable */
 
 /*
  * Bit position definitions of SPI_SR (Status Register)
